@@ -433,7 +433,7 @@ Git is free software distributed under the GPL.
 
 +++
 
-**小结**
+#### ## 小结 ##
 
 + 场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令`git restore file`。
 
@@ -514,4 +514,209 @@ $ git push origin master
 ```
 
 把本地`master`分支的最新修改推送至GitHub，现在，你就拥有了真正的分布式版本库！
+
+### 3.2 删除远程库
+
+如果添加的时候地址写错了，或者就是想删除远程库，可以用`git remote rm <name>`命令。使用前，建议先用`git remote -v`查看远程库信息：
+
+##### @ `git remote -v` 查看远程库
+
+```shell
+$ git remote -v
+origin  git@github.com:michaelliao/learn-git.git (fetch)
+origin  git@github.com:michaelliao/learn-git.git (push)
+```
+
+##### @ `git remote rm` 删除远程库
+
+然后，根据名字删除，比如删除`origin`：
+
+```shell
+$ git remote rm origin
+```
+
+此处的“删除”其实是解除了本地和远程的绑定关系，并不是物理上删除了远程库。远程库本身并没有任何改动。要真正删除远程库，需要登录到GitHub，在后台页面找到删除按钮再删除。
+
++++
+
+#### ## 小结 ##
+
++ 要关联一个远程库，使用命令`git remote add origin git@server-name:path/repo-name.git`；
+
++ 关联一个远程库时必须给远程库指定一个名字，`origin`是默认习惯命名；
+
++ 关联后，使用命令`git push -u origin master`第一次推送master分支的所有内容；
+
++ 此后，每次本地提交后，只要有必要，就可以使用命令`git push origin master`推送最新修改；
+
+分布式版本系统的最大好处之一是在本地工作完全不需要考虑远程库的存在，也就是有没有联网都可以正常工作，而SVN在没有联网的时候是拒绝干活的！当有网络的时候，再把本地提交推送一下就完成了同步，真是太方便了！
+
+### 3.3 从远程库克隆
+
+##### @ `git clone` 克隆远程库
+
+克隆到本地的库自动与原远程库关联。
+
+## 4 分支管理
+
+——平行宇宙
+
+### 4.1 创建与合并分支
+
+在版本回退里，已经知道，每次提交，Git 都把它们串成一条时间线，这条时间线就是一个分支。截止到目前，只有一条时间线，在 Git 里，这个分支叫主分支，即 `master` 分支。`HEAD` 严格来说不是指向提交，而是指向 `master`，`master` 才是指向提交的，所以，`HEAD` 指向的就是当前分支。
+
+#### 4.1.1 原理
+
+一开始的时候，`master`分支是一条线，Git用`master`指向最新的提交，再用`HEAD`指向`master`，就能确定当前分支，以及当前分支的提交点：
+
+ ![git-br-initial](C:\Users\Lab1119\OneDrive\Markdown Notes\img\0.png)
+
+每次提交，`master`分支都会向前移动一步，这样，随着不断提交，`master`分支的线也越来越长。
+
+当创建新的分支，例如`dev`时，Git新建了一个指针叫`dev`，指向`master`相同的提交，再把`HEAD`指向`dev`，就表示当前分支在`dev`上：
+
+![git-br-create](C:\Users\Lab1119\OneDrive\Markdown Notes\img\l.png) 
+
+Git 创建一个分支很快，因为除了增加一个`dev`指针，改改`HEAD`的指向，工作区的文件都没有任何变化！
+
+不过，从现在开始，对工作区的修改和提交就是针对`dev`分支了，比如新提交一次后，`dev`指针往前移动一步，而`master`指针不变：
+
+![git-br-dev-fd](C:\Users\Lab1119\OneDrive\Markdown Notes\img\l-16403363675223.png) 
+
+假如在`dev`上的工作完成了，就可以把`dev`合并到`master`上。Git怎么合并呢？最简单的方法，就是直接把`master`指向`dev`的当前提交，就完成了合并：
+
+![git-br-ff-merge](C:\Users\Lab1119\OneDrive\Markdown Notes\img\0-16403363675224.png) 
+
+所以Git合并分支也很快！就改改指针，工作区内容也不变！
+
+合并完分支后，甚至可以删除`dev`分支。删除`dev`分支就是把`dev`指针给删掉，删掉后，就剩下了一条`master`分支：
+
+![git-br-rm](C:\Users\Lab1119\OneDrive\Markdown Notes\img\0-16403363675225.png) 
+
+#### 4.1.2 实战
+
+首先，创建`dev`分支，然后切换到`dev`分支：
+
+##### @ `git check` 创建/切换分支
+
+```shell
+$ git checkout -b dev
+Switched to a new branch 'dev'
+```
+
+`git checkout` 命令加上`-b`参数表示创建并切换，相当于以下两条命令：
+
+```shell
+$ git branch dev
+$ git checkout dev
+Switched to branch 'dev'
+```
+
+实际上，切换分支这个动作，用`switch`更科学。因此，新版本的Git提供了新的`git switch`命令来切换分支：
+
+##### @ `git switch` 创建/切换分支
+
+创建并切换到新的`dev`分支，可以使用：
+
+```shell
+$ git switch -c dev
+```
+
+直接切换到已有的`master`分支，可以使用：
+
+```shell
+$ git switch master
+```
+
+然后，用`git branch`命令查看当前分支：
+
+##### @ `git branch` 查看分支
+
+```shell
+$ git branch
+* dev
+  master
+```
+
+`git branch`命令会列出所有分支，当前分支前面会标一个`*`号。
+
+然后，我们就可以在`dev`分支上正常提交，比如对`readme.txt`做个修改，加上一行：
+
+```
+Creating a new branch is quick.
+```
+
+然后提交：
+
+```shell
+$ git add readme.txt 
+$ git commit -m "branch test"
+[dev b17d20e] branch test
+ 1 file changed, 1 insertion(+)
+```
+
+现在，`dev`分支的工作完成，我们就可以切换回`master`分支：
+
+```shell
+$ git checkout master
+Switched to branch 'master'
+```
+
+切换回`master`分支后，再查看一个`readme.txt`文件，刚才添加的内容不见了！因为那个提交是在`dev`分支上，而`master`分支此刻的提交点并没有变：
+
+![git-br-on-master](C:\Users\Lab1119\OneDrive\Markdown Notes\img\0-16403369147759.png) 
+
+现在，我们把`dev`分支的工作成果合并到`master`分支上：
+
+##### @ `git merge` 合并分支
+
+```shell
+$ git merge dev
+Updating d46f35e..b17d20e
+Fast-forward
+ readme.txt | 1 +
+ 1 file changed, 1 insertion(+)
+```
+
+`git merge`命令用于合并指定分支到当前分支。合并后，再查看`readme.txt`的内容，就可以看到，和`dev`分支的最新提交是完全一样的。
+
+注意到上面的`Fast-forward`信息，Git 告诉我们，这次合并是“快进模式”，也就是直接把`master`指向`dev`的当前提交，所以合并速度非常快。
+
+当然，也不是每次合并都能`Fast-forward`，我们后面会讲其他方式的合并。
+
+合并完成后，就可以放心地删除`dev`分支了：
+
+##### @ `git branch -d` 删除分支
+
+```shell
+$ git branch -d dev
+Deleted branch dev (was b17d20e).
+```
+
+删除后，查看`branch`，就只剩下`master`分支了：
+
+```shell
+$ git branch
+* master
+```
+
+因为创建、合并和删除分支非常快，所以 Git 鼓励使用分支完成某个任务，合并后再删掉分支，这和直接在`master`分支上工作效果是一样的，但过程更安全。
+
++++
+
+#### ## 小结 ##
+
+Git 鼓励使用分支：
+
++ 查看分支：`git branch`
+
++ 创建分支：`git branch <name>`
+
++ 切换分支：`git checkout <name>`或者`git switch <name>`
+
++ 创建+切换分支：`git checkout -b <name>`或者`git switch -c <name>`
+
++ 合并某分支到当前分支：`git merge <name>`
+
++ 删除分支：`git branch -d <name>`
 
