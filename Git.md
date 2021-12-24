@@ -481,3 +481,37 @@ $ git restore test.txt
 
 ## 3 远程仓库
 
+使用 Github 充当远程仓库，在 Github 的设置中上传 SSH 公钥。
+
+### 3.1 添加远程库
+
+登陆 GitHub，然后，在右上角 “+” 找到 “New repository” 按钮，创建一个新的仓库：
+
+根据 GitHub 的提示，在本地的`learngit`仓库下运行命令，将本地仓库与远程仓库关联：
+
+##### @ `git remote add` 添加远程库
+
+```shell
+$ git remote add origin https://github.com/CharlesLevis/Git.git
+```
+
+下一步，就可以把本地库的所有内容推送到远程库上：
+
+##### @ `git push` 远程推送
+
+```shell
+$ git push -u origin master
+```
+
+把本地库的内容推送到远程，用`git push`命令，实际上是把当前分支`master`推送到远程。
+
+由于远程库是空的，我们第一次推送`master`分支时，加上了`-u`参数，Git不但会把本地的`master`分支内容推送到远程新的`master`分支，还会把本地的`master`分支和远程的`master`分支关联起来，在以后的推送或者拉取时就可以简化命令。
+
+从现在起，只要本地作了提交，就可以通过命令：
+
+```shell
+$ git push origin master
+```
+
+把本地`master`分支的最新修改推送至GitHub，现在，你就拥有了真正的分布式版本库！
+
