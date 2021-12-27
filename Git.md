@@ -1622,3 +1622,5 @@ $ cat .gitconfig
 
 ## 7 使用 SourceTree
 
+详见 [廖雪峰的教程](https://www.liaoxuefeng.com/wiki/896043488029600/1317161920364578)。
+
